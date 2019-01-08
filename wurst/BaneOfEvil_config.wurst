@@ -3,32 +3,33 @@ import Assets
 import ChannelAbilityPreset
 
 /** Ability - Art */
-@config let ANIMATION_NAMES = "attack"
-@config let BUTTON_POSITION_X = 0
-@config let BUTTON_POSITION_Y = 2
-@config let ICON = Icons.bTNImprovedStrengthOfTheMoon
-@config let FX_MISSILE = Abilities.huntermissile
-@config let FX_PATH = Abilities.blinkCaster
-@config let FX_ON_HIT = Objects.nECancelDeath
-@config let FX_KNOCKBACK = Abilities.crushingWaveDamage
+public let ANIMATION_NAMES = "attack"
+public let BUTTON_POSITION_X = 0
+public let BUTTON_POSITION_Y = 2
+public let ICON = Icons.bTNImprovedStrengthOfTheMoon
+public let FX_MISSILE = Abilities.huntermissile
+public let FX_MISSILE_SCALE = 1.2
+public let FX_PATH = Abilities.blinkCaster
+public let FX_EXPLODE = Objects.nECancelDeath
+public let FX_KNOCKBACK = Abilities.crushingWaveDamage
 
 /** Ability - Data */
-@config let AREA = 200.
-@config let DAMAGE = 100.
-@config let MISSILE_SPEED = 1000.
-@config let KNOCKBACK_VELOCITY = 1000.
-@config let KNOCKBACK_ANGLE_AIR = 10.
-@config let TARGET_TYPES = Targettype.POINT
+public let AREA = 200.
+public let DAMAGE = 100.
+public let MISSILE_SPEED = 1000.
+public let KNOCK_VELOCITY = 1000.
+public let KNOCK_ANGLE_AIR = 10. // Angle in degrees
+public let TARGET_TYPES = Targettype.POINT
 
 /** Ability - Stats */
-@config let CAST_RANGE = 1400.
-@config let CASTING_TIME = 0.
-@config let COOLDOWN = 0.
-@config let MANA_COST = 0
+public let CAST_RANGE = 1400.
+public let CASTING_TIME = 0.
+public let COOLDOWN = 0.
+public let MANA_COST = 0
 
 /** Ability - Text */
-@config let HOTKEY_NORMAL = "Q"
-@config let NAME = "Bane of Evil"
-@config let TT_NORMAL = "|cff0095FFBane of Evil|cffFFD900"
-@config let TT_EXTENDED = "|cffFFF18BShoots a destructive arrow " +
+public let HOTKEY_NORMAL = "Q"
+public let NAME = "Bane of Evil"
+public let TT_NORMAL = "|cff0095FFBane of Evil"
+public let TT_EXTENDED = "|cffFFF18BShoots a destructive arrow " +
     "with incredible precision.|n|nHotkey: |cffFFD900Q"
