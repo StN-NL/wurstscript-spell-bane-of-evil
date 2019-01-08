@@ -1,0 +1,10 @@
+package Setup
+import Knockback3
+import OnUnitEnterLeave
+import BaneOfEvil
+
+init
+    Knockback3.gravity = 45.
+    SetTimeOfDay(8.)
+
+    onEnter(() -> getEnterLeaveUnit().getTypeId() == 'Hvwd' ? getEnterLeaveUnit().addAbility(BaneOfEvil.abilityId) : 0)
