@@ -1,0 +1,39 @@
+package Missile
+import ClosureTimers
+
+interface OnHitCallback
+    function callback()
+
+public class Missile
+    effect missile
+
+    /** Default flying height for missiles. */
+    static var heightMissile = 80.
+
+    /**
+    Creates an missile effect from any model. This effect inherits its
+    position and facing angle from the source unit.
+    */
+    construct(string modelFile, vec2 positionSource, vec2 positionTarget)
+        missile = addEffect(modelFile, positionSource)
+        missile
+            ..setHeight(heightMissile)
+            ..setRoll(positionSource.angleTo(positionTarget).radians())
+
+    /**
+    Moves the missile to the target position, and upon arrival it is destoyed.
+    It optionally leaves a trail behind (this effect is destroyed immediately).
+    Upon reaching the target, the right hand side of the lambda is evaluated.
+	Example use:
+    | toPoint(caster.getPos(), 1000., Abilities.blinkCaster) ->
+    |     onHit()
+    */
+    function toPoint(vec2 positionTarget, real speedMissile, string effectTrail, OnHitCallback onHit)
+        doPeriodically(ANIMATION_PERIOD) cb ->
+            if missile.getPos().distanceTo(positionTarget) <= speedMissile * ANIMATION_PERIOD
+                missile.destr()
+                onHit.callback()
+                destroy cb
+            else
+                missile.setPos(missile.getPos().moveTowards(positionTarget, speedMissile * ANIMATION_PERIOD))
+                flashEffect(effectTrail, missile.getPos())
