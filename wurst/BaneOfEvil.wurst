@@ -1,71 +1,43 @@
 package BaneOfEvil
-import Assets
+import BaneOfEvil_config
 import ChannelAbilityPreset
 import ClosureEvents
 import ClosureForGroups
-import Missile
 import Knockback3
-
-/** Ability - Art */
-@configurable let ANIMATION_NAMES = "attack"
-@configurable let BUTTON_POSITION_X = 0
-@configurable let BUTTON_POSITION_Y = 2
-@configurable let ICON = Icons.bTNImprovedStrengthOfTheMoon
-@configurable let FX_MISSILE = Abilities.huntermissile
-@configurable let FX_PATH = Abilities.blinkCaster
-@configurable let FX_ON_HIT = Objects.nECancelDeath
-@configurable let FX_KNOCKBACK = Abilities.crushingWaveDamage
-
-/** Ability - Data */
-@configurable let AREA = 200.
-@configurable let DAMAGE = 100.
-@configurable let MISSILE_SPEED = 1000.
-@configurable let KNOCKBACK_VELOCITY = 1000.
-@configurable let KNOCKBACK_ANGLE_AIR = 10.
-@configurable let TARGET_TYPES = Targettype.POINT
-
-/** Ability - Stats */
-@configurable let CAST_RANGE = 1400.
-@configurable let CASTING_TIME = 0.3
-@configurable let COOLDOWN = 10.
-@configurable let MANA_COST = 100
-
-/** Ability - Text */
-@configurable let HOTKEY_NORMAL = "Q"
-@configurable let NAME = "Bane of Evil"
-@configurable let TT_NORMAL = "|cff0095FFBane of Evil|cffFFD900"
-@configurable let TT_EXTENDED = "|cffFFF18BShoots a destructive arrow " +
-    "with incredible precision.|n|nHotkey: |cffFFD900Q"
+import Missile
 
 /** Ability - Mechanics */
 class BaneOfEvil
-    /** Ability - Generate */
-    static let abilityId = compiletime(ABIL_ID_GEN.next())
+    /** Ability - Generate objects */
+    static let abilId = compiletime(ABIL_ID_GEN.next())
 
     /**	After a unit finishes casting the ability */
-    static function cast(unit unitCaster, vec2 positionTarget)
-        let missileBaneOfEvil = new Missile(FX_MISSILE, unitCaster.getPos(), positionTarget)
-        missileBaneOfEvil.toPoint(positionTarget, MISSILE_SPEED, FX_PATH) ->
-            onHit(unitCaster, positionTarget)
+    static function fire(unit caster, vec2 target)
+        Missile missile = Missile.create(FX_MISSILE, caster.getPos3Fly(), target)
+        missile
+            ..setSpeed(MISSILE_SPEED)
+            ..setTrail(FX_PATH)
+            ..onHit() ->
+                explode(caster, target)
 
     /**	After the missile reaches its destination */
-    static function onHit(unit unitCaster, vec2 positionTarget)
-        flashEffect(FX_ON_HIT, positionTarget)
-        forUnitsInRange(positionTarget, AREA) unitInRange ->
-            if unitInRange.isAlive() and unitInRange.getOwner().isEnemyOf(unitCaster.getOwner())
-                flashEffect(FX_KNOCKBACK, unitInRange, "origin")
-                let angleGround = positionTarget.angleTo(unitInRange.getPos())
-                unitCaster.damageTarget(unitInRange, DAMAGE)
-                Knockback3.add(unitInRange, KNOCKBACK_VELOCITY, angleGround, KNOCKBACK_ANGLE_AIR.fromDeg())
+    static function explode(unit caster, vec2 target)
+        flashEffect(FX_EXPLODE, target)
+        forUnitsInRange(target, AREA) u ->
+            if u.isAlive() and u.getOwner().isEnemyOf(caster.getOwner())
+                flashEffect(FX_KNOCKBACK, u, "origin")
+                let knockAngleGround = target.angleTo(u.getPos())
+                caster.damageTarget(u, DAMAGE)
+                Knockback3.add(u, KNOCK_VELOCITY, knockAngleGround, KNOCK_ANGLE_AIR.fromDeg())
 
 // Trigger when a unit finishes casting the Bane of Evil ability
 init
-    EventListener.onPointCast(BaneOfEvil.abilityId) (unitCaster, positionTarget) ->
-        BaneOfEvil.cast(unitCaster, positionTarget)
+    EventListener.onPointCast(BaneOfEvil.abilId) (caster, target) ->
+        BaneOfEvil.fire(caster, target)
 
-/** Object settings */
-@compiletime function generateAbilityBaneOfEvil()
-    new ChannelAbilityPreset(BaneOfEvil.abilityId, 1, true)
+/** Ability - Object settings */
+@compiletime function generateAbility()
+    new ChannelAbilityPreset(BaneOfEvil.abilId, 1, true)
         ..setName(NAME)
         ..setAnimationNames(ANIMATION_NAMES)
         ..presetButtonPosNormal(BUTTON_POSITION_X, BUTTON_POSITION_Y)
