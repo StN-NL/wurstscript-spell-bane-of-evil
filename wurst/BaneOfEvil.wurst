@@ -1,80 +1,63 @@
 package BaneOfEvil
-import Assets
-import ChannelAbilityPreset
+import BaneOfEvil_config
+import AbilityTooltipGenerator
 import ClosureEvents
 import ClosureForGroups
-import Missile
 import Knockback3
-
-/** Ability - Art */
-@configurable let ANIMATION_NAMES = "attack"
-@configurable let BUTTON_POSITION_X = 0
-@configurable let BUTTON_POSITION_Y = 2
-@configurable let ICON = Icons.bTNImprovedStrengthOfTheMoon
-@configurable let FX_MISSILE = Abilities.huntermissile
-@configurable let FX_PATH = Abilities.blinkCaster
-@configurable let FX_ON_HIT = Objects.nECancelDeath
-@configurable let FX_KNOCKBACK = Abilities.crushingWaveDamage
-
-/** Ability - Data */
-@configurable let AREA = 200.
-@configurable let DAMAGE = 100.
-@configurable let MISSILE_SPEED = 1000.
-@configurable let KNOCKBACK_VELOCITY = 1000.
-@configurable let KNOCKBACK_ANGLE_AIR = 10.
-@configurable let TARGET_TYPES = Targettype.POINT
-
-/** Ability - Stats */
-@configurable let CAST_RANGE = 1400.
-@configurable let CASTING_TIME = 0.3
-@configurable let COOLDOWN = 10.
-@configurable let MANA_COST = 100
-
-/** Ability - Text */
-@configurable let HOTKEY_NORMAL = "Q"
-@configurable let NAME = "Bane of Evil"
-@configurable let TT_NORMAL = "|cff0095FFBane of Evil|cffFFD900"
-@configurable let TT_EXTENDED = "|cffFFF18BShoots a destructive arrow " +
-    "with incredible precision.|n|nHotkey: |cffFFD900Q"
+import Missile
 
 /** Ability - Mechanics */
 class BaneOfEvil
-    /** Ability - Generate */
-    static let abilityId = compiletime(ABIL_ID_GEN.next())
+    /** Ability - Generate objects */
+    static let abilId = compiletime(ABIL_ID_GEN.next())
 
     /**	After a unit finishes casting the ability */
-    static function cast(unit unitCaster, vec2 positionTarget)
-        let missileBaneOfEvil = new Missile(FX_MISSILE, unitCaster.getPos(), positionTarget)
-        missileBaneOfEvil.toPoint(positionTarget, MISSILE_SPEED, FX_PATH) ->
-            onHit(unitCaster, positionTarget)
+    static function fire(unit caster, vec2 target)
+        let missile = new Missile(FX_MISSILE, caster.getPos3Fly(), target)
+        missile
+        ..setSpeed(MISSILE_SPEED)
+        ..setHeight(MISSILE_HEIGHT)
+        ..setScale(FX_MISSILE_SCALE_BASE + FX_MISSILE_SCALE_LVL * caster.getAbilityLevel(abilId))
+        ..setTrail(FX_TRAIL)
+        ..setTrailAttach(FX_TRAIL_ATTACH)
+        ..onHit(-> explode(caster, target))
 
     /**	After the missile reaches its destination */
-    static function onHit(unit unitCaster, vec2 positionTarget)
-        flashEffect(FX_ON_HIT, positionTarget)
-        forUnitsInRange(positionTarget, AREA) unitInRange ->
-            if unitInRange.isAlive() and unitInRange.getOwner().isEnemyOf(unitCaster.getOwner())
-                flashEffect(FX_KNOCKBACK, unitInRange, "origin")
-                let angleGround = positionTarget.angleTo(unitInRange.getPos())
-                unitCaster.damageTarget(unitInRange, DAMAGE)
-                Knockback3.add(unitInRange, KNOCKBACK_VELOCITY, angleGround, KNOCKBACK_ANGLE_AIR.fromDeg())
+    static function explode(unit caster, vec2 target)
+        let area = AREA_BASE + AREA_LVL * caster.getAbilityLevel(abilId)
+        let damage = DAMAGE_BASE + DAMAGE_LVL * caster.getAbilityLevel(abilId)
+        let knockVelocity = KNOCK_VELOCITY_BASE + KNOCK_VELOCITY_LVL * caster.getAbilityLevel(abilId)
+        flashEffect(FX_EXPLODE, target)
+        forUnitsInRange(target, area) u ->
+            if u.isAlive() and u.getOwner().isEnemyOf(caster.getOwner())
+                flashEffect(FX_KNOCKBACK, u, "origin")
+                let knockAngleGround = target.angleTo(u.getPos())
+                caster.damageTarget(u, damage)
+                Knockback3.add(u, knockVelocity, knockAngleGround, KNOCK_ANGLE_AIR)
 
 // Trigger when a unit finishes casting the Bane of Evil ability
 init
-    EventListener.onPointCast(BaneOfEvil.abilityId) (unitCaster, positionTarget) ->
-        BaneOfEvil.cast(unitCaster, positionTarget)
+    EventListener.onPointCast(BaneOfEvil.abilId) (caster, target) ->
+        BaneOfEvil.fire(caster, target)
 
-/** Object settings */
-@compiletime function generateAbilityBaneOfEvil()
-    new ChannelAbilityPreset(BaneOfEvil.abilityId, 1, true)
-        ..setName(NAME)
+/** Ability - Object settings */
+@compiletime function generateAbility()
+    let ttBaneOfEvil = new AbilityTooltipGenerator(TT_EXTENDED)
+        ..addProperty("Area", lvl -> (AREA_BASE + lvl * AREA_LVL).toString())
+        ..addProperty("Damage", lvl -> (DAMAGE_BASE + lvl * DAMAGE_LVL).toString())
+        ..addProperty("Knockback", lvl -> (KNOCK_VELOCITY_BASE + lvl * KNOCK_VELOCITY_LVL).toString())
+
+    new ChannelAbilityPreset(BaneOfEvil.abilId, 3, true, ttBaneOfEvil)
+        ..setHeroAbility(true)
         ..setAnimationNames(ANIMATION_NAMES)
         ..presetButtonPosNormal(BUTTON_POSITION_X, BUTTON_POSITION_Y)
         ..presetIcon(ICON)
         ..presetHotkey(HOTKEY_NORMAL)
         ..presetTargetTypes(TARGET_TYPES)
-        ..presetCastRange(lvl -> CAST_RANGE)
         ..presetCastingTime(lvl -> CASTING_TIME)
+        ..presetCastRange(lvl -> CAST_RANGE)
         ..presetCooldown(lvl -> COOLDOWN)
         ..presetManaCost(lvl -> MANA_COST)
-        ..presetTooltipNormal(lvl -> TT_NORMAL)
-        ..presetTooltipNormalExtended(lvl -> TT_EXTENDED)
+        ..tooltipStartListen()
+        ..setName(TT_NORMAL)
+        ..tooltipStopListen()

@@ -1,39 +1,90 @@
 package Missile
-import ClosureTimers
+import TimerUtils
 
-interface OnHitCallback
+interface CallbackOnHit
     function callback()
 
 public class Missile
-    effect missile
+    use TimedLoop
 
-    /** Default flying height for missiles. */
-    static var heightMissile = 80.
+    /** Instance variabels, default settings for missiles. */
+    var scale = 1.
+    var height = 80.
+    var speed = 900.
+    var trail = ""
+    var trailAttach = ZERO3
 
-    /**
-    Creates an missile effect from any model. This effect inherits its
-    position and facing angle from the source unit.
-    */
-    construct(string modelFile, vec2 positionSource, vec2 positionTarget)
-        missile = addEffect(modelFile, positionSource)
-        missile
-            ..setHeight(heightMissile)
-            ..setRoll(positionSource.angleTo(positionTarget).radians())
+    /** Create a new missile from any model and set its target. */
+    construct(string modelFile, vec3 source, vec2 target)
+        build(modelFile, source, target.toVec3(), null)
 
-    /**
-    Moves the missile to the target position, and upon arrival it is destoyed.
-    It optionally leaves a trail behind (this effect is destroyed immediately).
-    Upon reaching the target, the right hand side of the lambda is evaluated.
-	Example use:
-    | toPoint(caster.getPos(), 1000., Abilities.blinkCaster) ->
-    |     onHit()
-    */
-    function toPoint(vec2 positionTarget, real speedMissile, string effectTrail, OnHitCallback onHit)
-        doPeriodically(ANIMATION_PERIOD) cb ->
-            if missile.getPos().distanceTo(positionTarget) <= speedMissile * ANIMATION_PERIOD
-                missile.destr()
-                onHit.callback()
-                destroy cb
-            else
-                missile.setPos(missile.getPos().moveTowards(positionTarget, speedMissile * ANIMATION_PERIOD))
-                flashEffect(effectTrail, missile.getPos())
+    /** Create a new missile from any model and set its target. */
+    construct(string modelFile, vec3 source, vec3 target)
+        build(modelFile, source, target, null)
+
+    /** Create a new missile from any model and set its target. */
+    construct(string modelFile, vec3 source, unit target)
+        build(modelFile, source, ZERO3, target)
+    
+    function setScale(real scale)
+        art.setScale(scale)
+        this.scale = scale
+    
+    function setHeight(real height)
+        this.height = height
+
+    function setSpeed(real speed)
+        this.speed = speed
+
+    function setTrail(string trail)
+        this.trail = trail
+
+    function setTrailAttach(vec3 attach)
+        this.trailAttach = attach
+
+    function onHit(CallbackOnHit cb)
+        this.cb = cb
+
+    /** Internal. Instance variabels. */
+    private effect art
+    private vec3 v
+    private unit u = null
+    private CallbackOnHit cb
+
+    /** Internal. Build a new missile and set its target. */
+    private function build(string modelFile, vec3 source, vec3 point, unit target)
+        this.art = addEffect(modelFile, source.add(0., 0., height))
+        this.u = target
+        this.v = point
+        startTimedLoop()
+
+    /** Internal. Move the missile to the target position */
+    override function onTimedLoop()
+        vec3 missile = art.getPos3()
+        vec3 target
+        
+        if u != null
+            target = u.getPos3Fly() + vec3(0., 0., height)
+        else
+            target = v + vec3(0., 0., height)
+
+        let yaw = Atan2(missile.z - target.z, missile.toVec2().distanceTo(target.toVec2())).asAngleRadians()
+        let roll = Atan2(target.y - missile.y, target.x - missile.x).asAngleRadians()
+
+        if trail != ""
+            addEffect(trail, missile + trailAttach)
+                ..setScale(scale)
+                ..setYaw(yaw)
+                ..setRoll(roll)
+                ..destr()
+
+        if missile.distanceToSq(target) >= (speed * ANIMATION_PERIOD).squared()
+            art ..setPos(missile.moveTowards(target, speed * ANIMATION_PERIOD))
+                ..setYaw(yaw)
+                ..setRoll(roll)
+        else
+            stopTimedLoopAndDestroy()
+            
+    ondestroy
+        art.destr()
+        cb.callback()
