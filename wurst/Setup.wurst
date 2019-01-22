@@ -1,8 +1,0 @@
-package Setup
-import OnUnitEnterLeave
-import BaneOfEvil
-
-init
-    SetTimeOfDay(8.)
-
-    onEnter(() -> getEnterLeaveUnit().getTypeId() == 'Hvwd' ? getEnterLeaveUnit().addAbility(BaneOfEvil.abilId) : 0)
