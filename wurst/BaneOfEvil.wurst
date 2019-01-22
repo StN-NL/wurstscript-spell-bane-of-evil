@@ -1,0 +1,63 @@
+package BaneOfEvil
+import BaneOfEvil_config
+import AbilityTooltipGenerator
+import ClosureEvents
+import ClosureForGroups
+import Knockback3
+import Missile
+
+/** Ability - Mechanics */
+class BaneOfEvil
+    /** Ability - Generate objects */
+    static let abilId = compiletime(ABIL_ID_GEN.next())
+
+    /**	After a unit finishes casting the ability */
+    static function fire(unit caster, vec2 target)
+        let missile = new Missile(FX_MISSILE, caster.getPos3Fly(), target)
+        missile
+        ..setSpeed(MISSILE_SPEED)
+        ..setHeight(MISSILE_HEIGHT)
+        ..setScale(FX_MISSILE_SCALE_BASE + FX_MISSILE_SCALE_LVL * caster.getAbilityLevel(abilId))
+        ..setTrail(FX_TRAIL)
+        ..setTrailAttach(FX_TRAIL_ATTACH)
+        ..onHit(-> explode(caster, target))
+
+    /**	After the missile reaches its destination */
+    static function explode(unit caster, vec2 target)
+        let area = AREA_BASE + AREA_LVL * caster.getAbilityLevel(abilId)
+        let damage = DAMAGE_BASE + DAMAGE_LVL * caster.getAbilityLevel(abilId)
+        let knockVelocity = KNOCK_VELOCITY_BASE + KNOCK_VELOCITY_LVL * caster.getAbilityLevel(abilId)
+        flashEffect(FX_EXPLODE, target)
+        forUnitsInRange(target, area) u ->
+            if u.isAlive() and u.getOwner().isEnemyOf(caster.getOwner())
+                flashEffect(FX_KNOCKBACK, u, "origin")
+                let knockAngleGround = target.angleTo(u.getPos())
+                caster.damageTarget(u, damage)
+                Knockback3.add(u, knockVelocity, knockAngleGround, KNOCK_ANGLE_AIR)
+
+// Trigger when a unit finishes casting the Bane of Evil ability
+init
+    EventListener.onPointCast(BaneOfEvil.abilId) (caster, target) ->
+        BaneOfEvil.fire(caster, target)
+
+/** Ability - Object settings */
+@compiletime function generateAbility()
+    let ttBaneOfEvil = new AbilityTooltipGenerator(TT_EXTENDED)
+        ..addProperty("Area", lvl -> (AREA_BASE + lvl * AREA_LVL).toString())
+        ..addProperty("Damage", lvl -> (DAMAGE_BASE + lvl * DAMAGE_LVL).toString())
+        ..addProperty("Knockback", lvl -> (KNOCK_VELOCITY_BASE + lvl * KNOCK_VELOCITY_LVL).toString())
+
+    new ChannelAbilityPreset(BaneOfEvil.abilId, 3, true, ttBaneOfEvil)
+        ..setHeroAbility(true)
+        ..setAnimationNames(ANIMATION_NAMES)
+        ..presetButtonPosNormal(BUTTON_POSITION_X, BUTTON_POSITION_Y)
+        ..presetIcon(ICON)
+        ..presetHotkey(HOTKEY_NORMAL)
+        ..presetTargetTypes(TARGET_TYPES)
+        ..presetCastingTime(lvl -> CASTING_TIME)
+        ..presetCastRange(lvl -> CAST_RANGE)
+        ..presetCooldown(lvl -> COOLDOWN)
+        ..presetManaCost(lvl -> MANA_COST)
+        ..tooltipStartListen()
+        ..setName(TT_NORMAL)
+        ..tooltipStopListen()

@@ -1,0 +1,90 @@
+package Missile
+import TimerUtils
+
+interface CallbackOnHit
+    function callback()
+
+public class Missile
+    use TimedLoop
+
+    /** Instance variabels, default settings for missiles. */
+    var scale = 1.
+    var height = 80.
+    var speed = 900.
+    var trail = ""
+    var trailAttach = ZERO3
+
+    /** Create a new missile from any model and set its target. */
+    construct(string modelFile, vec3 source, vec2 target)
+        build(modelFile, source, target.toVec3(), null)
+
+    /** Create a new missile from any model and set its target. */
+    construct(string modelFile, vec3 source, vec3 target)
+        build(modelFile, source, target, null)
+
+    /** Create a new missile from any model and set its target. */
+    construct(string modelFile, vec3 source, unit target)
+        build(modelFile, source, ZERO3, target)
+    
+    function setScale(real scale)
+        art.setScale(scale)
+        this.scale = scale
+    
+    function setHeight(real height)
+        this.height = height
+
+    function setSpeed(real speed)
+        this.speed = speed
+
+    function setTrail(string trail)
+        this.trail = trail
+
+    function setTrailAttach(vec3 attach)
+        this.trailAttach = attach
+
+    function onHit(CallbackOnHit cb)
+        this.cb = cb
+
+    /** Internal. Instance variabels. */
+    private effect art
+    private vec3 v
+    private unit u = null
+    private CallbackOnHit cb
+
+    /** Internal. Build a new missile and set its target. */
+    private function build(string modelFile, vec3 source, vec3 point, unit target)
+        this.art = addEffect(modelFile, source.add(0., 0., height))
+        this.u = target
+        this.v = point
+        startTimedLoop()
+
+    /** Internal. Move the missile to the target position */
+    override function onTimedLoop()
+        vec3 missile = art.getPos3()
+        vec3 target
+        
+        if u != null
+            target = u.getPos3Fly() + vec3(0., 0., height)
+        else
+            target = v + vec3(0., 0., height)
+
+        let yaw = Atan2(missile.z - target.z, missile.toVec2().distanceTo(target.toVec2())).asAngleRadians()
+        let roll = Atan2(target.y - missile.y, target.x - missile.x).asAngleRadians()
+
+        if trail != ""
+            addEffect(trail, missile + trailAttach)
+                ..setScale(scale)
+                ..setYaw(yaw)
+                ..setRoll(roll)
+                ..destr()
+
+        if missile.distanceToSq(target) >= (speed * ANIMATION_PERIOD).squared()
+            art ..setPos(missile.moveTowards(target, speed * ANIMATION_PERIOD))
+                ..setYaw(yaw)
+                ..setRoll(roll)
+        else
+            stopTimedLoopAndDestroy()
+            
+    ondestroy
+        art.destr()
+        cb.callback()
