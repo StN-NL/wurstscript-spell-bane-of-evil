@@ -1,0 +1,32 @@
+package Ranger
+import Assets
+import ChannelAbilityPreset
+import BaneOfEvil
+
+let RANGER_ID = compiletime(HERO_ID_GEN.next())
+
+// Mechanics
+init
+    SetTimeOfDay(8.)
+
+    let ranger = CreateUnit(Player(0), RANGER_ID, - 150, 120, 0)
+    ranger
+        ..setLevel(5, false)
+
+@compiletime function gen()
+    new HeroDefinition(RANGER_ID, UnitIds.sylvanuswindrunner)
+        ..setName("Ranger")
+        ..setProperNames("Sylvanas")
+        ..setAttack1ProjectileArc(0.0)
+        ..setAttack1ProjectileSpeed(2000)
+        ..setAttack1ProjectileArt("Abilities\\Weapons\\Arrow\\ArrowMissile.mdl")
+        ..setNormalAbilities("AInv")
+        ..setAttack1CooldownTime(2.0)
+        ..setAttack1Range(1200)
+        ..setAcquisitionRange(1200.0)
+        ..setHitPointsMaximumBase(1000)
+        ..setUnitSoundSet("Arthas")
+        ..setIconScoreScreen("ReplaceableTextures\\CommandButtons\\BTNSylvanusWindrunner.blp")
+        ..setCollisionSize(24.0)
+        ..setSelectionScale(1.2)
+        ..setHeroAbilities(BaneOfEvil.abilId.toRawCode())
