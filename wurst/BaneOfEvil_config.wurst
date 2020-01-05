@@ -3,38 +3,37 @@ import Assets
 import ChannelAbilityPreset
 
 /** Ability - Art */
-public let ANIMATION_NAMES = "attack"
-public let BUTTON_POSITION_X = 0
-public let BUTTON_POSITION_Y = 2
-public let ICON = Icons.bTNImprovedStrengthOfTheMoon
-public let FX_MISSILE = Abilities.huntermissile
-public let FX_MISSILE_SCALE_BASE = 0.8
-public let FX_MISSILE_SCALE_LVL = 0.2
-public let FX_TRAIL = Abilities.blinkCaster
-public let FX_TRAIL_ATTACH = vec3(0., 0., - 80.)
-public let FX_EXPLODE = Objects.nECancelDeath
-public let FX_KNOCKBACK = Abilities.crushingWaveDamage
+public constant ANIMATION_NAMES = "attack"
+public constant BUTTON_POSITION_X = 0
+public constant BUTTON_POSITION_Y = 2
+public constant ICON = Icons.bTNImprovedStrengthOfTheMoon
+public constant FX_MISSILE = Abilities.huntermissile
+public constant FX_MISSILE_SCALE_BASE = 0.8
+public constant FX_MISSILE_SCALE_LVL = 0.2
+public constant FX_TRAIL = Abilities.blinkCaster
+public constant FX_TRAIL_ATTACH = vec3(0., 0., - 80.)
+public constant FX_EXPLODE = Objects.nECancelDeath
+public constant FX_KNOCKBACK = Abilities.crushingWaveDamage
 
 /** Ability - Data */
-public let AREA_BASE = 100.
-public let AREA_LVL = 50.
-public let DAMAGE_BASE = 100.
-public let DAMAGE_LVL = 50.
-public let MISSILE_HEIGHT = 80.
-public let MISSILE_SPEED = 1500.
-public let KNOCK_VELOCITY_BASE = 800.
-public let KNOCK_VELOCITY_LVL = 200.
-public let KNOCK_ANGLE_AIR = 10..fromDeg()
-public let TARGET_TYPES = Targettype.POINT
+public constant AREA_BASE = 100.
+public constant AREA_LVL = 50.
+public constant DAMAGE_BASE = 100.
+public constant DAMAGE_LVL = 50.
+public constant MISSILE_HEIGHT = 80.
+public constant MISSILE_SPEED = 1500.
+public constant KNOCK_VELOCITY_BASE = 800.
+public constant KNOCK_VELOCITY_LVL = 200.
+public constant KNOCK_ANGLE_AIR = 10..fromDeg()
+public constant TARGET_TYPES = Targettype.POINT
 
 /** Ability - Stats */
-public let CAST_RANGE = 1400.
-public let CASTING_TIME = 0.
-public let COOLDOWN = 0.
-public let MANA_COST = 0
+public constant CAST_RANGE = 1400.
+public constant CASTING_TIME = 0.
+public constant COOLDOWN = 0.
+public constant MANA_COST = 0
 
 /** Ability - Text */
-public let HOTKEY_NORMAL = "Q"
-public let TT_NORMAL = "|cff0095FFBane of Evil|cffffffff"
-public let TT_EXTENDED = "|cffFFF18BShoots a destructive arrow " +
-    "with incredible precision."
+public constant HOTKEY_NORMAL = "Q"
+public constant TT_NORMAL = "|cff0095FFBane of Evil|cffffffff"
+public constant TT_EXTENDED = "|cffFFF18BShoots a destructive arrow with incredible precision."
