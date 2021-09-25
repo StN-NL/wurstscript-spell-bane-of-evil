@@ -68,24 +68,23 @@ public class Missile
         else
             target = v + vec3(0., 0., height)
 
-        let yaw = (target.toVec2() - missile.toVec2()).getAngle()
-        let pitch = -(target - missile).norm().z.asin()
+        let yaw = Atan2(missile.z - target.z, missile.toVec2().distanceTo(target.toVec2())).asAngleRadians()
+        let roll = Atan2(target.y - missile.y, target.x - missile.x).asAngleRadians()
 
         if trail != ""
             addEffect(trail, missile + trailAttach)
                 ..setScale(scale)
                 ..setYaw(yaw)
-                ..setPitch(pitch)
+                ..setRoll(roll)
                 ..destr()
 
         if missile.distanceToSq(target) >= (speed * ANIMATION_PERIOD).squared()
             art ..setPos(missile.moveTowards(target, speed * ANIMATION_PERIOD))
                 ..setYaw(yaw)
-                ..setPitch(pitch)
+                ..setRoll(roll)
         else
             stopTimedLoopAndDestroy()
             
     ondestroy
         art.destr()
         cb.callback()
-        destroy cb

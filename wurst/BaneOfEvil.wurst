@@ -9,18 +9,18 @@ import Missile
 /** Ability - Mechanics */
 class BaneOfEvil
     /** Ability - Generate objects */
-    static constant abilId = compiletime(ABIL_ID_GEN.next())
+    static let abilId = compiletime(ABIL_ID_GEN.next())
 
     /**	After a unit finishes casting the ability */
     static function fire(unit caster, vec2 target)
-        new Missile(FX_MISSILE, caster.getPos3Fly(), target)
+        let missile = new Missile(FX_MISSILE, caster.getPos3Fly(), target)
+        missile
         ..setSpeed(MISSILE_SPEED)
         ..setHeight(MISSILE_HEIGHT)
         ..setScale(FX_MISSILE_SCALE_BASE + FX_MISSILE_SCALE_LVL * caster.getAbilityLevel(abilId))
         ..setTrail(FX_TRAIL)
         ..setTrailAttach(FX_TRAIL_ATTACH)
-        ..onHit() ->
-            explode(caster, target)
+        ..onHit(-> explode(caster, target))
 
     /**	After the missile reaches its destination */
     static function explode(unit caster, vec2 target)
@@ -53,9 +53,7 @@ init
         ..presetButtonPosNormal(BUTTON_POSITION_X, BUTTON_POSITION_Y)
         ..presetIcon(ICON)
         ..presetHotkey(HOTKEY_NORMAL)
-        ..presetOption(Option.TARGETIMAGE, true)
         ..presetTargetTypes(TARGET_TYPES)
-        ..presetAreaofEffect(lvl -> AREA_BASE + lvl * AREA_LVL)
         ..presetCastingTime(lvl -> CASTING_TIME)
         ..presetCastRange(lvl -> CAST_RANGE)
         ..presetCooldown(lvl -> COOLDOWN)
